@@ -53,32 +53,33 @@ const sleep = (milliseconds) => {
 app.get('/api/nissaninfiniti/:partnumber', async (req, res) => {
     console.log(req.params.partnumber);
     let ob = {};
-    try {
-        const response = await axios.get(`https://www.nissanpartsdeal.com/parts/nissan~${req.params.partnumber}.html`);
-        const html = response.data;
-        const $ = cheerio.load(html); 
-        $('.price-section-retail').each(function(i, elem) {
-            console.log("Nissan: " + $(this).find('span').text().trim())
-            ob = {partnumber: req.params.partnumber, retailprice: stringToNumber($(this).find('span').text().trim())}
-        });
-    }catch(error) {
-        try{
+    if(req.params.partnumber){
+        try {
             const response = await axios.get(`https://www.nissanpartsdeal.com/parts/nissan~${req.params.partnumber}.html`);
             const html = response.data;
             const $ = cheerio.load(html); 
             $('.price-section-retail').each(function(i, elem) {
-                console.log("Infiniti: " + $(this).find('span').text().trim())
+                console.log("Nissan: " + $(this).find('span').text().trim())
                 ob = {partnumber: req.params.partnumber, retailprice: stringToNumber($(this).find('span').text().trim())}
             });
-        }catch(error){
-        console.log(error);
+        }catch(error) {
+            try{
+                const response = await axios.get(`https://www.nissanpartsdeal.com/parts/nissan~${req.params.partnumber}.html`);
+                const html = response.data;
+                const $ = cheerio.load(html); 
+                $('.price-section-retail').each(function(i, elem) {
+                    console.log("Infiniti: " + $(this).find('span').text().trim())
+                    ob = {partnumber: req.params.partnumber, retailprice: stringToNumber($(this).find('span').text().trim())}
+                });
+            }catch(error){
+            console.log(error);
+            }
         }
     }
     res.json(ob)
 });
 
-app.get('/', async (req, res) => {
-    console.log(req.params.id);
+app.get('/save', async (req, res) => {
     let ob = [['partnumber','price']];
     let csvContent = "data:text/csv;charset=utf-8,";
     fs.readFile('data.csv', 'utf8', async function (err, csv) {
@@ -119,6 +120,16 @@ app.get('/', async (req, res) => {
         console.log(ob);
         res.send(`<a href="${csvContent}">${csvContent}</a>`);
     });
+});
+
+app.get('/', async (req, res) => {
+ res.send(
+     'Welcome to the nissan/infiniti api!' + 
+     '<br>' + 
+     'Fast and Easy to use!' +
+     '<br>' +
+     'https://uploadnissaninfiniti.herokuapp.com/api/nissaninfiniti/:partnumber'
+     )
 });
 
 
