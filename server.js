@@ -63,16 +63,38 @@ app.get('/api/nissaninfiniti/:partnumber', async (req, res) => {
                 ob = {partnumber: req.params.partnumber, retailprice: stringToNumber($(this).find('span').text().trim())}
             });
         }catch(error) {
+            // nissan-tip-guide
             try{
-                const response = await axios.get(`https://www.nissanpartsdeal.com/parts/nissan~${req.params.partnumber}.html`);
+                const response = await axios.get(`https://www.nissanpartsdeal.com/parts/nissan-tip-guide~${req.params.partnumber}.html`);
                 const html = response.data;
                 const $ = cheerio.load(html); 
                 $('.price-section-retail').each(function(i, elem) {
-                    console.log("Infiniti: " + $(this).find('span').text().trim())
+                    console.log("Nissan: " + $(this).find('span').text().trim())
                     ob = {partnumber: req.params.partnumber, retailprice: stringToNumber($(this).find('span').text().trim())}
                 });
             }catch(error){
-            console.log(error);
+                try{
+                    const response = await axios.get(`https://www.infinitipartsdeal.com/parts/infiniti~${req.params.partnumber}.html`);
+                    const html = response.data;
+                    const $ = cheerio.load(html); 
+                    $('.price-section-retail').each(function(i, elem) {
+                        console.log("Infiniti: " + $(this).find('span').text().trim())
+                        ob = {partnumber: req.params.partnumber, retailprice: stringToNumber($(this).find('span').text().trim())}
+                    });
+                }catch(error){
+                    console.log(error);
+                    try{
+                        const response = await axios.get(`https://www.infinitipartsdeal.com/parts/infiniti-tip-guide~${req.params.partnumber}.html`);
+                        const html = response.data;
+                        const $ = cheerio.load(html); 
+                        $('.price-section-retail').each(function(i, elem) {
+                            console.log("Infiniti: " + $(this).find('span').text().trim())
+                            ob = {partnumber: req.params.partnumber, retailprice: stringToNumber($(this).find('span').text().trim())}
+                        });
+                    }catch(error){
+                        console.log(error);
+                    }
+                }
             }
         }
     }
@@ -120,6 +142,24 @@ app.get('/save', async (req, res) => {
         console.log(ob);
         res.send(`<a href="${csvContent}">${csvContent}</a>`);
     });
+});
+
+app.get('/corscheck', async (req, res) => {
+    const response = await axios.get(`https://uploadnissaninfiniti.herokuapp.com/api/nissaninfiniti/21741-JF00A`);
+    console.log(response.data);
+    if(response.data.partnumber){
+        res.send(
+            'API is Live!' + 
+            '<br>' + 
+            'API url: https://uploadnissaninfiniti.herokuapp.com/api/nissaninfiniti/21741-JF00A' +
+            '<br>' +
+            `Partnumber: ${response.data.partnumber}` +
+            `<br>` + 
+            `Price: ${response.data.retailprice}`
+            )
+    }else{
+        res.send('API is Down! :(')
+    }
 });
 
 app.get('/', async (req, res) => {
