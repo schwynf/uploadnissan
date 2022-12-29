@@ -65,6 +65,7 @@ app.get('/api/nissaninfiniti/:partnumber', async (req, res) => {
         }catch(error) {
             // nissan-tip-guide
             try{
+                console.log('tip-guide');
                 const response = await axios.get(`https://www.nissanpartsdeal.com/parts/nissan-tip-guide~${req.params.partnumber}.html`);
                 const html = response.data;
                 const $ = cheerio.load(html); 
